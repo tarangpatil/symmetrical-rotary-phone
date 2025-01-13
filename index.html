@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  </head>
+  <body>
+    <div id="root" class="flex flex-col h-screen overflow-hidden font-serif">
+      <div class="h-[16.66vh] bg-green-800 text-white">
+        <form
+          id="changer"
+          class="flex flex-col justify-center items-start w-32 m-auto h-full text-xl"
+        >
+          <label class="flex items-center"
+            ><input
+              type="radio"
+              class=""
+              name="mode"
+              value="stopwatch"
+              checked
+              oninput="updateMode()"
+            />&nbsp;Stopwatch</label
+          >
+          <label class="flex items-center"
+            ><input
+              type="radio"
+              class=""
+              name="mode"
+              value="timer"
+              oninput="updateMode()"
+            />&nbsp;Timer</label
+          >
+        </form>
+      </div>
+      <div
+        class="h-[83.33vh] flex flex-col justify-start items-center pt-40 bg-ed-600 relative"
+        id="renderee"
+      >
+        <form id="timer-setter" class="flex absolute top-8">
+          Set timer:&nbsp;
+          <input
+            type="number"
+            min="0"
+            max="99"
+            name="mins"
+            class="border font-mono"
+            value="0"
+          />:
+          <input
+            type="number"
+            min="0"
+            max="59"
+            name="sex"
+            class="border font-mono"
+            value="0"
+          />
+          <input
+            type="submit"
+            value="Set"
+            class="border border-blue-600 text-blue-600 rounded hover:bg-blue-600 hover:text-white cursor-pointer mx-4 px-4"
+          />
+        </form>
+        <p id="time" class="font-mono text-7xl">00:00.000</p>
+        <div class="flex my-20">
+          <button
+            id="reset-button"
+            class="text-4xl font-mono px-4 py-2 bg-gray-600 text-white rounded-md mx-4"
+          >
+            reset
+          </button>
+          <button
+            id="start-button"
+            class="text-4xl font-mono px-4 py-2 bg-blue-600 text-white rounded-md mx-4"
+          >
+            start
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    const timeP = document.querySelector("#time");
+    const startButton = document.querySelector("#start-button");
+    const resetButton = document.querySelector("#reset-button");
+    const modeForm = document.forms[0];
+    const timerSetter = document.querySelector("#timer-setter");
+    let mode = "stopwatch";
+    const time = {
+      mins: 0,
+      sec: 0,
+      centis: 0,
+    };
+    let started = false;
+    function updateMode() {
+      time.sec = 0;
+      time.centis = 0;
+      time.mins = 0;
+      started = false;
+      mode = modeForm.mode.value;
+      if (mode === "stopwatch") {
+        timerSetter.style.display = "none";
+        timerSetter.onsubmit = (e) => e.preventDefault();
+      } else {
+        timerSetter.style.display = "flex";
+        timerSetter.onsubmit = (e) => {
+          e.preventDefault();
+          time.mins = parseInt(timerSetter.mins.value);
+          time.sec = parseInt(timerSetter.sex.value);
+        };
+      }
+    }
+    updateMode();
+    resetButton.onclick = (e) => {
+      time.sec = 0;
+      time.centis = 0;
+      time.mins = 0;
+      started = false;
+
+      startButton.textContent = "start";
+      startButton.classList.add("bg-blue-600");
+      startButton.classList.remove("bg-red-600");
+    };
+    startButton.onclick = (e) => {
+      started = !started;
+      if (started) {
+        e.target.textContent = "stop";
+        e.target.classList.remove("bg-blue-600");
+        e.target.classList.add("bg-red-600");
+      } else {
+        e.target.textContent = "start";
+        e.target.classList.add("bg-blue-600");
+        e.target.classList.remove("bg-red-600");
+      }
+    };
+
+    setInterval(() => {
+      if (started) {
+        if (mode === "stopwatch") time.centis += 1;
+        else time.centis -= 1;
+      }
+      if (mode === "stopwatch") {
+        if (time.centis === 100) {
+          time.centis = 0;
+          time.sec += 1;
+        }
+        if (time.sec === 60) {
+          time.sec = 0;
+          time.mins += 1;
+        }
+      } else {
+        if (time.centis === -1) {
+          time.centis = 99;
+          time.sec--;
+        }
+        if (time.sec === -1) {
+          time.sec = 59;
+          time.mins--;
+        }
+        if (time.sec === 0 && time.mins === 0 && time.centis === 0) {
+          resetButton.click();
+        }
+      }
+      timeP.textContent = `${time.mins.toString().padStart(2, "0")}:${time.sec
+        .toString()
+        .padStart(2, "0")}.${time.centis
+        .toString()
+        .substring(0, 2)
+        .padStart(2, "0")}`;
+    }, 10);
+  </script>
+</html>
